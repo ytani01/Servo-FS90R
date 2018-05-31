@@ -46,8 +46,6 @@ def main():
     global pulse_left
     global pulse_right
 
-    print('.', end='')
-
     pi = pigpio.pi()
     pi.set_mode(PIN_LEFT, pigpio.OUTPUT)
     pi.set_mode(PIN_RIGHT, pigpio.OUTPUT)
