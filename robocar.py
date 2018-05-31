@@ -18,7 +18,7 @@ Cur_Pulse = [0, 0]
 Pulse_Left = 0
 Pulse_Right = 0
 
-Pulse_Forward = [PULSE_STOP + 145, PULSE_STOP - 115]
+Pulse_Forward = [PULSE_STOP + 145, PULSE_STOP - 145]
 Pulse_Backward = [PULSE_STOP - 90, PULSE_STOP + 95]
 Pulse_Left = [PULSE_STOP - 45, PULSE_STOP - 45]
 Pulse_Right = [PULSE_STOP + 60, PULSE_STOP + 50]
