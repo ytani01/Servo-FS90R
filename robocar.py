@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 #
 #
+import os
+import sys
 import pigpio
 import readchar
 import time
+
+MYNAME = sys.argv[0].split('/').pop()
+
+CONF_FILE = os.environ["HOME"]+'/robot_car.conf'
+print('CONF_FILE='+CONF_FILE)
 
 PIN_LEFT = 12
 PIN_RIGHT = 13
@@ -76,6 +83,31 @@ def update_pulse(stat):
     if stat == 'right':
         Pulse_Right = Cur_Pulse
 
+def conf_load():
+    with open(CONF_FILE, 'r', encoding='utf-8') as f:
+        line = f.readline().strip('\n\r')
+        Pulse_Forward = list(map(int,line.split(' ')))
+        print(Pulse_Forward)
+
+        line = f.readline().strip('\n\r')
+        Pulse_Backward = list(map(int,line.split(' ')))
+        print(Pulse_Backward)
+
+        line = f.readline().strip('\n\r')
+        Pulse_Left = list(map(int,line.split(' ')))
+        print(Pulse_Left)
+
+        line = f.readline().strip('\n\r')
+        Pulse_Right = list(map(int,line.split(' ')))
+        print(Pulse_Right)
+
+def conf_save():
+    with open(CONF_FILE, 'w', encoding='utf-8') as f:
+        f.write(' '.join(map(str, Pulse_Forward))+'\n')
+        f.write(' '.join(map(str, Pulse_Backward))+'\n')
+        f.write(' '.join(map(str, Pulse_Left))+'\n')
+        f.write(' '.join(map(str, Pulse_Right))+'\n')
+
 #
 # main
 #
@@ -85,8 +117,11 @@ def main():
 
     # init
     pi = pigpio.pi()
+    pi.set_mode(17, pigpio.OUTPUT)
+    pi.write(17, 1)
     pi.set_mode(PIN_LEFT, pigpio.OUTPUT)
     pi.set_mode(PIN_RIGHT, pigpio.OUTPUT)
+
 
     Cur_Pulse = [PULSE_STOP, PULSE_STOP]
     stat_move = None
@@ -143,6 +178,7 @@ def main():
             update_pulse(stat_move)
 
         if ch == 's':
+            stat_move = None
             Cur_Pulse = [PULSE_STOP, PULSE_STOP]
 
         if ch == ' ':
@@ -154,9 +190,10 @@ def main():
 
 if __name__ == "__main__":
     try:
+        conf_load()
         main()
     finally:
         print('stop!')
         mtr(PULSE_OFF, PULSE_OFF)
         pi.stop()
-
+        conf_save()
