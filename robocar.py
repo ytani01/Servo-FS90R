@@ -16,7 +16,6 @@ PIN_LEFT = 13
 PIN_RIGHT = 12
 
 PULSE_OFF = 0
-PULSE_STOP = 1480
 PULSE_MIN = 1000
 PULSE_MAX = 2000
 
@@ -25,10 +24,11 @@ Cur_Pulse = [0, 0]
 Pulse_Left = 0
 Pulse_Right = 0
 
-Pulse_Forward = [PULSE_STOP + 145, PULSE_STOP - 145]
-Pulse_Backward = [PULSE_STOP - 90, PULSE_STOP + 95]
-Pulse_Left = [PULSE_STOP - 45, PULSE_STOP - 45]
-Pulse_Right = [PULSE_STOP + 60, PULSE_STOP + 50]
+Pulse_Stop = [ 1480, 1480 ]
+Pulse_Forward = [Pulse_Stop[0] + 145, Pulse_Stop[1] - 145]
+Pulse_Backward = [Pulse_Stop[0] - 90, Pulse_Stop[1] + 95]
+Pulse_Left = [Pulse_Stop[0] - 45, Pulse_Stop[1]  - 45]
+Pulse_Right = [Pulse_Stop[0] + 60, Pulse_Stop[1]  + 50]
 
 Move_Stat = None
 
@@ -69,13 +69,16 @@ def mtr1(pin, pulse_width):
 
 def update_pulse(stat):
     global Cur_Pulse
-    global Pulse_Foward
+    global Pulse_Stop
+    global Pulse_Forward
     global Pulse_Backward
     global Pulse_Left
     global Pulse_Right
 
+    if stat == None:
+        Pulse_Stop = Cur_Pulse
     if stat == 'forward':
-        Pulse_Foward = Cur_Pulse
+        Pulse_Forward = Cur_Pulse
     if stat == 'backward':
         Pulse_Backward = Cur_Pulse
     if stat == 'left':
@@ -84,30 +87,40 @@ def update_pulse(stat):
         Pulse_Right = Cur_Pulse
 
 def conf_load():
-    global Pulse_Forward
+    global Pulse_Forward, Pulse_Stop
     global Pulse_Backward
     global Pulse_Left
     global Pulse_Right
 
-    with open(CONF_FILE, 'r', encoding='utf-8') as f:
+    try:
+      with open(CONF_FILE, 'r', encoding='utf-8') as f:
+        line = f.readline().strip('\n\r')
+        Pulse_Stop = list(map(int,line.split(' ')))
+
         line = f.readline().strip('\n\r')
         Pulse_Forward = list(map(int,line.split(' ')))
-        print(Pulse_Forward)
 
         line = f.readline().strip('\n\r')
         Pulse_Backward = list(map(int,line.split(' ')))
-        print(Pulse_Backward)
 
         line = f.readline().strip('\n\r')
         Pulse_Left = list(map(int,line.split(' ')))
-        print(Pulse_Left)
 
         line = f.readline().strip('\n\r')
         Pulse_Right = list(map(int,line.split(' ')))
-        print(Pulse_Right)
+
+    except(FileNotFoundError):
+        print('!! ' + CONF_FILE + ': not found ... use default value')
+
+    print(Pulse_Stop)
+    print(Pulse_Forward)
+    print(Pulse_Backward)
+    print(Pulse_Left)
+    print(Pulse_Right)
 
 def conf_save():
     with open(CONF_FILE, 'w', encoding='utf-8') as f:
+        f.write(' '.join(map(str, Pulse_Stop))+'\n')
         f.write(' '.join(map(str, Pulse_Forward))+'\n')
         f.write(' '.join(map(str, Pulse_Backward))+'\n')
         f.write(' '.join(map(str, Pulse_Left))+'\n')
@@ -128,14 +141,14 @@ def main():
     pi.set_mode(PIN_RIGHT, pigpio.OUTPUT)
 
 
-    Cur_Pulse = [PULSE_STOP, PULSE_STOP]
+    Cur_Pulse = Pulse_Stop
     stat_move = None
 
     # Ready
     print('Ready')
 
     while True:
-        print(Cur_Pulse[0] - PULSE_STOP, Cur_Pulse[1] - PULSE_STOP)
+        print(Cur_Pulse[0] - Pulse_Stop[0], Cur_Pulse[1] - Pulse_Stop[1])
 
         mtr(Cur_Pulse[0], Cur_Pulse[1])
 
@@ -184,7 +197,7 @@ def main():
 
         if ch == 's':
             stat_move = None
-            Cur_Pulse = [PULSE_STOP, PULSE_STOP]
+            Cur_Pulse = Pulse_Stop
 
         if ch == ' ':
             break
