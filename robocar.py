@@ -12,8 +12,8 @@ MYNAME = sys.argv[0].split('/').pop()
 CONF_FILE = os.environ["HOME"]+'/robot_car.conf'
 print('CONF_FILE='+CONF_FILE)
 
-PIN_LEFT = 12
-PIN_RIGHT = 13
+PIN_LEFT = 13
+PIN_RIGHT = 12
 
 PULSE_OFF = 0
 PULSE_STOP = 1480
@@ -84,6 +84,11 @@ def update_pulse(stat):
         Pulse_Right = Cur_Pulse
 
 def conf_load():
+    global Pulse_Forward
+    global Pulse_Backward
+    global Pulse_Left
+    global Pulse_Right
+
     with open(CONF_FILE, 'r', encoding='utf-8') as f:
         line = f.readline().strip('\n\r')
         Pulse_Forward = list(map(int,line.split(' ')))
