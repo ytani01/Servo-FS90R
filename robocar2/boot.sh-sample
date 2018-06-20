@@ -1,0 +1,66 @@
+#!/bin/sh
+
+echo -n '========== '
+date
+
+BINDIR=${HOME}/bin
+
+LCD=""
+
+while ! (aplay -l | grep seeed); do
+	echo -n "."
+	sleep 1
+done
+
+#if [ X${LCD} = X ]; then
+#	CMD="${BINDIR}/boot-speakipaddr.sh"
+#	if [ -x ${CMD} ]; then
+#		${CMD}
+#	fi
+#fi
+
+CMD="${BINDIR}/FabLabKannai-GoogleAssistant.sh"
+if [ -x ${CMD} ]; then
+	${CMD} &
+fi
+
+echo -n '========== '
+date
+
+##########
+LOGFILE=${HOME}/tmp/${MYNAME}.log
+
+echo_and_bg () {
+    CMDLINE=$*
+    echo ${CMDLINE}
+    ${CMDLINE} &
+}
+
+date
+
+# pigpio
+if [ X`pgrep pigpiod` = X ]; then
+    echo pigpiod
+    sudo pigpiod -t 0
+fi
+
+
+# 
+CMD=${BINDIR}/mjpg-streamer.sh
+echo ${CMD}
+while [ X`pgrep mjpg_streamer` = X ]; do
+    if [ -x ${CMD} ]; then
+	echo_and_bg ${CMD}
+        sleep 5
+    fi
+done
+
+##
+CMD=${BINDIR}/loop-snapshot.sh
+echo ${CMD}
+if [ "X`pgrep loop-snapshot`" = "X" ]; then
+    if [ -x ${CMD} ]; then
+	#echo_and_bg ${CMD} 20 1000
+	echo_and_bg ${CMD} 5 2000
+    fi
+fi
