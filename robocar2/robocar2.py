@@ -37,7 +37,7 @@ Move_Stat = None
 Tof = None
 Tof_Timing = None
 
-DISTANCE_NEAR = 400     # mm
+DISTANCE_NEAR = 350     # mm
 #
 def set_stop():
     global Cur_Pulse
