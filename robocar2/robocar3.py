@@ -149,6 +149,7 @@ def auto_mode():
     global Cur_Pulse
     global Tof
     global Tof_Timing
+    global InChar
 
     stat_move = None
 
@@ -200,6 +201,10 @@ def auto_mode():
 
         mtr(Cur_Pulse)
 
+        if InChar != '':
+            InChar = ''
+            break
+
         time.sleep(Tof_Timing/1000000.00)
 
 #####
@@ -210,7 +215,7 @@ def charReader():
 
     InChar = ''
     while True:
-        InChar = readchar.readkey()
+        InChar = readchar.readchar()
         print('InChar =', InChar, ord(InChar))
 
         if ord(InChar) <= 0x20:
@@ -265,6 +270,7 @@ def main():
     #    ch = readchar.readkey()
     #    print(ch)
         ch = InChar
+        InChar = ''
 
         if ch == '@':
             auto_mode()
@@ -320,7 +326,6 @@ def main():
         if ch != '' and ord(ch) < 0x20:
             t.join()
             break
-
 
     mtr(Pulse_Off)
 
