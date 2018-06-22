@@ -20,6 +20,8 @@ PULSE_OFF = 0
 PULSE_MIN = 1000
 PULSE_MAX = 2000
 
+DISTANCE_NEAR = 250     # mm
+#
 pi = None
 Cur_Pulse = [0, 0]
 Pulse_Left = 0
@@ -37,8 +39,6 @@ Move_Stat = None
 Tof = None
 Tof_Timing = None
 
-DISTANCE_NEAR = 350     # mm
-#
 def set_stop():
     global Cur_Pulse
     global Pulse_Stop
@@ -147,8 +147,10 @@ def auto_mode():
     stat_move = None
 
     last_turn = None
-    last_sleep = 0.5
+    sleep_unit = 0.5
+    SLEEP_COUNT_MAX = 7
 
+    sleep_count = 1
     while True:
         distance = Tof.get_distance()
         print("distance = %d cm" % (distance/10))
@@ -156,7 +158,7 @@ def auto_mode():
         if distance > DISTANCE_NEAR:
             stat_move = 'forward'
             set_forward()
-            last_sleep = 0.5
+            sleep_count = 1
 
         else:
             if last_turn != 'left':
@@ -167,10 +169,26 @@ def auto_mode():
                 last_turn = 'right'
 
             mtr(Cur_Pulse)
-            time.sleep(last_sleep)
-            last_sleep += 0.5
-            if last_sleep > 3:
-                last_sleep = 0.5
+            for i in range(sleep_count):
+                time.sleep(sleep_unit)
+
+                set_stop()
+                mtr(Cur_Pulse)
+                time.sleep(Tof_Timing/1000000.00)
+
+                distance = Tof.get_distance()
+                print("i=%d " % i, "distance = %d cm" % (distance/10))
+                if distance > DISTANCE_NEAR:
+                    break
+                if last_turn == 'left':
+                    set_left()
+                else:
+                    set_right()
+                mtr(Cur_Pulse)
+
+            sleep_count += 1
+            if sleep_count > SLEEP_COUNT_MAX:
+                sleep_count = 1
 
             set_stop()
 
@@ -195,6 +213,7 @@ def main():
 
 
     Tof = VL53L0X.VL53L0X()
+    Tof.start_ranging(VL53L0X.VL53L0X_BEST_ACCURACY_MODE)
     Tof.start_ranging(VL53L0X.VL53L0X_BETTER_ACCURACY_MODE)
     Tof_Timing = Tof.get_timing()
     if Tof_Timing < 20000:
@@ -216,8 +235,9 @@ def main():
 
         mtr(Cur_Pulse)
 
-        ch = readchar.readkey()
-        print(ch)
+        #ch = readchar.readkey()
+        ch = readchar.readchar()
+        print(ch, ord(ch))
 
         if ch == '@':
             auto_mode()
@@ -267,6 +287,9 @@ def main():
             Cur_Pulse = Pulse_Stop
 
         if ch == ' ':
+            break
+
+        if ord(ch) < 0x20:
             break
 
 
