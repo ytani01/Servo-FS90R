@@ -66,7 +66,7 @@ def main():
     global MY_PORT
 
     if len(sys.argv) > 1:
-        MY_PORT = int(sys.argv[0])
+        MY_PORT = int(sys.argv[1])
 
     server = socketserver.TCPServer(('', MY_PORT), MyHandler)
     print('listening ...', server.socket.getsockname())

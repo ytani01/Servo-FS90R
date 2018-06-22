@@ -17,6 +17,9 @@
 
 from __future__ import print_function
 
+import sys
+import socket
+
 import argparse
 import os.path
 import json
@@ -32,6 +35,9 @@ import subprocess
 #import RPi.GPIO as GPIO
 from time import sleep
 from pixels import pixels
+
+ROBOT_HOST = 'localhost'
+ROBOT_PORT = 12340
 
 SOUND_DIR = '/home/pi/sound'
 SOUND_ACK = [
@@ -67,6 +73,19 @@ continue_flag = True
 timeout_count = 0
 
 DEVICE_API_URL = 'https://embeddedassistant.googleapis.com/v1alpha2'
+
+def robot_cmd(cmd):
+    sock = socket.create_connection((ROBOT_HOST, ROBOT_PORT), 0.4)
+    sock.settimeout(0.1)
+    while True:
+        try:
+            data = sock.recv(1024)
+            print(data)
+        except socket.timeout:
+            break
+    sock.settimeout(0.7)
+    sock.sendall(cmd.encode('utf-8'))
+    sock.close()
 
 def setContinueFlag(speech_str):
     global assistant
@@ -187,6 +206,21 @@ def process_event(event, device_id):
             #GPIO.output(PIN_LAMP, GPIO.LOW)
             sleep(0.5)
             #GPIO.output(PIN_LAMP, GPIO.HIGH)
+        if '回転' in speech_str:
+            if '右' in speech_str:
+                assistant.stop_conversation()
+                robot_cmd('D')
+            if '左' in speech_str:
+                assistant.stop_conversation()
+                robot_cmd('A')
+        if '前進' in speech_str:
+            assistant.stop_conversation()
+            robot_cmd('A')
+        if 'バック' in speech_str:
+            assistant.stop_conversation()
+            robot_cmd('X')
+
+
         setContinueFlag(speech_str)
 
     if event.type == EventType.ON_CONVERSATION_TURN_TIMEOUT:

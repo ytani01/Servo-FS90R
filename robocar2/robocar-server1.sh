@@ -16,4 +16,4 @@ fi
 . ${ENVDIR}/bin/activate
 
 cd ${WORK_DIR}
-exec ${CMD}
+exec ${CMD} $*
